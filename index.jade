@@ -55,16 +55,6 @@ html(lang='en')
       ga('send', 'pageview');
     script(async src='https://www.google-analytics.com/analytics.js')
 
-    script.
-      (function(w, d){
-       var id='embedly-platform', n = 'script';
-       if (!d.getElementById(id)){
-         w.embedly = w.embedly || function() {(w.embedly.q = w.embedly.q || []).push(arguments);};
-         var e = d.createElement(n); e.id = id; e.async=1;
-         e.src = ('https:' === document.location.protocol ? 'https' : 'http') + '://cdn.embedly.com/widgets/platform.js';
-         var s = d.getElementsByTagName(n)[0];
-         s.parentNode.insertBefore(e, s);
-       }
-      })(window, document);
-
     script(src='[[ app-*.js ]]')
+
+    script(src='//cdn.iframe.ly/embed.js?key=7a079dea7ff66b065e2d66e05b21d6a4&align=left&iframe=1&lazy=1&ssl=1' charset='utf-8' async)
