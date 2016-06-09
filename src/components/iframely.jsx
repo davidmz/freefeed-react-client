@@ -11,8 +11,8 @@ export default class Iframely  extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAll: false, 
-      expanded: false 
+      showAll: true, 
+      expanded: true 
     };
   }
 
@@ -74,6 +74,12 @@ export default class Iframely  extends React.Component {
 
   knownLinkType = (url) => {
     const types = [
+      {
+        type: 'freefeed',
+        re: [
+          /https:\/\/([a-z0-9-]+\.)?freefeed\.net(\/|$)/i
+        ]
+      },
       {
         type: 'google-docs',
         re: [
