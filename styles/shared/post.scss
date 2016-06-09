@@ -260,6 +260,18 @@
   &.expanded {
     max-height: none;
   }
+
+  &.google-docs,
+  &.youtube,
+  &.vimeo {
+    max-width: 500px;
+  }
+
+  &.google-docs .link-preview-inner > div > div {
+    padding-bottom: 60% !important;
+    border: 1px solid #ddd;
+  }
+
 }
 
 .link-preview-container {
