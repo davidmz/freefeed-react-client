@@ -271,13 +271,10 @@
     padding-bottom: 60% !important;
     border: 1px solid #ddd;
   }
-
-  &.freefeed {
-    display: none;
-  }
 }
 
 .link-preview-container {
+  overflow: hidden;
   margin-bottom: 8px;
 }
 

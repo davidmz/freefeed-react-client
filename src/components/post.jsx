@@ -15,7 +15,7 @@ import Dropzone from './dropzone';
 import {api as apiConfig} from '../config';
 import {getToken} from '../services/auth';
 import PostMoreMenu from './post-more-menu';
-import Iframely from './iframely';
+import LinkPreview from './link-preview';
 import {getFirstLinkToEmbed} from '../utils';
 
 export default class Post extends React.Component {
@@ -301,7 +301,7 @@ export default class Post extends React.Component {
             removeAttachment={this.removeAttachment}/>
 
           {props.allowLinksPreview && noImageAttachments && linkToEmbed ? (
-            <Iframely url={linkToEmbed}/>) : false}
+            <LinkPreview url={linkToEmbed}/>) : false}
 
           <div className="dropzone-previews"></div>
 

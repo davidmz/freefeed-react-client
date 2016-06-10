@@ -5,25 +5,39 @@ import erd from 'element-resize-detector';
 
 const detector = erd({strategy: 'scroll'});
 const maxPreviewHeight = 550;
+const foldedHeight = 400;
+const expandBlockHeight = 27;
 
 export default class Iframely  extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      showAll: true, 
-      expanded: true 
+      contentHeight: 0,
+      expanded: false 
     };
   }
 
   componentDidMount() {
-    detector.listenTo(this.refs.prv, _.debounce(el => this.onPreviewResize(el.offsetHeight), 100));
+    detector.listenTo(this.refs.prv, _.debounce(el => this.onPreviewResize(el.offsetHeight), 500));
     window.iframely && iframely.load();
   }
 
-  onPreviewResize(height) {
-    const showAll = height <= maxPreviewHeight;
-    this.setState({showAll});
+  onPreviewResize(contentHeight) {
+    if (this.refs.prv.firstElementChild.tagName == 'A') {
+      contentHeight = 0;
+    }
+    this.setState({contentHeight});
+  }
+
+  isFoldingNeeded(state = this.state) {
+    return state.contentHeight > maxPreviewHeight;
+  }
+
+  getContainerHeight(state = this.state) {
+    return this.isFoldingNeeded(state) ? 
+      (state.expanded ? state.contentHeight : foldedHeight ) + expandBlockHeight : 
+      state.contentHeight; 
   }
 
   getHTML() {
@@ -41,24 +55,54 @@ export default class Iframely  extends React.Component {
     }
   }
 
-  render() {
-    const classNames = {
-      'link-preview': true,
-      'show-all': this.state.showAll,
-      'expanded': this.state.expanded,
-    };
+  componentWillUpdate(nextProps, nextState) {
+    const newHeight = this.getContainerHeight(nextState);
+    const currentHeight = this.getContainerHeight();
 
-    const knownLinkType = this.knownLinkType(this.props.url);
-    if (knownLinkType !== null) {
-      classNames[knownLinkType] = true;
+    if (newHeight == currentHeight) {
+      return;
     }
 
+    const node = this.refs.container,
+      top = elemTop(node),
+      halfScreen = Math.round(winHeight() / 2);    
+
+    let scrollBy = 0;
+
+    if (document.body.scrollTop > halfScreen / 2) { // near the top of screen
+      if (top > halfScreen) {
+        // nope
+      } else if (top + currentHeight < halfScreen) {
+        scrollBy = newHeight - currentHeight;
+      } else {
+        scrollBy = Math.round(newHeight * (halfScreen - top) / currentHeight);
+      }
+    }
+
+    if (scrollBy !== 0) {
+      document.body.scrollTop += scrollBy;
+    }
+  }
+
+  render() {
+    const knownLinkType = this.knownLinkType(this.props.url);
+    if (knownLinkType === 'freefeed') {
+      return false;
+    }
+
+    const classNames = {
+      'link-preview': true,
+      'show-all': !this.isFoldingNeeded(),
+      'expanded': this.state.expanded,
+      [knownLinkType]: true,
+    };
+
     return (
-      <div className="link-preview-container">
-        <div ref="wrapper" className={classnames(classNames)}>
+      <div ref="container" className="link-preview-container" style={{height: this.getContainerHeight() + 'px'}}>
+        <div className={classnames(classNames)}>
           <div ref="prv" className="link-preview-inner" dangerouslySetInnerHTML={this.getHTML()} />
         </div>
-        {this.state.showAll ? false : (
+        {!this.isFoldingNeeded() ? false : (
           <div className="link-preview-expand">
             {this.state.expanded ? 
               <i className="fa fa-minus-square-o"></i> : 
@@ -75,15 +119,9 @@ export default class Iframely  extends React.Component {
   knownLinkType = (url) => {
     const types = [
       {
-        type: 'freefeed',
-        re: [
-          /https:\/\/([a-z0-9-]+\.)?freefeed\.net(\/|$)/i
-        ]
-      },
-      {
         type: 'google-docs',
         re: [
-          /https:\/\/(?:docs|drive)\.google\.com\/(forms|document|presentation|spreadsheets|file)\/d\//i
+          /^https:\/\/(?:docs|drive)\.google\.com\/(forms|document|presentation|spreadsheets|file)\/d\//i
         ]
       },
       {
@@ -113,7 +151,14 @@ export default class Iframely  extends React.Component {
       }
     }
 
-    return null;
+    return '';
   }
+}
 
+function winHeight() {
+  return (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+}
+
+function elemTop(el) {
+  return Math.round(el.getBoundingClientRect().top);
 }
